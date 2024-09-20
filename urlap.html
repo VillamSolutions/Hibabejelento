@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hibabejelentő Űrlap</title>
+    <link rel="stylesheet" href="urlap.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Hibabejelntés</h1>
+        <form action="/submit" method="POST" enctype="multipart/form-data">
+            <!-- Hiba rövid megnevezése -->
+            <label for="hiba-nev">Hiba rövid megnevezése:</label>
+            <input type="text" id="hiba-nev" name="hiba-nev" required>
+            
+            <!-- Hiba leírása -->
+            <label for="hiba-leiras">Hiba leírása:</label>
+            <textarea id="hiba-leiras" name="hiba-leiras" rows="4" required></textarea>
+            
+            <!-- Fotó feltöltése -->
+            <label for="hiba-foto">Fotó feltöltése:</label>
+            <input type="file" id="hiba-foto" name="hiba-foto" accept="image/*">
+            
+            <!-- Helyszín legördülő menü -->
+            <label for="helyszin">Helyszín:</label>
+            <select id="helyszin" name="helyszin" required>
+                <option value="" disabled selected>Válassz helyszínt</option>
+                <option value="Iroda">Iroda</option>
+                <option value="Raktár">Raktár</option>
+                <option value="Gyár">Gyár</option>
+            </select>
+
+            <!-- Bejelentő neve (sima input) -->
+            <label for="bejelento">Bejelentő neve:</label>
+            <input type="text" id="bejelento" name="bejelento" required>
+
+            <!-- Küldés gomb -->
+            <button type="submit">Beküldés</button>
+        </form>
+    </div>
+</body>
+</html>
