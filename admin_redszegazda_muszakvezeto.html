@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Admin-Muszakvezeto-Rendszergazda</title>
+    <link rel="stylesheet" href="admin_redszegazda_muszakvezeto.css">
+</head>
+<body>
+    <!-- Kukát tartalmazó terület a bal oldalon -->
+    <div class="trash-container">
+        <img src="kuka.png" alt="Kuka" id="trash" ondrop="deleteTask(event)" ondragover="allowDrop(event)">
+    </div>
+
+    <div class="container">
+        <div class="column">
+            <h2>Kiosztatlan</h2>
+            <ul id="todo" class="task-list" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
+        </div>
+        <div class="column">
+            <h2>Elkezdett</h2>
+            <ul id="inprogress" class="task-list" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
+        </div>
+        <div class="column">
+            <h2>Várakozó</h2>
+            <ul id="complete" class="task-list" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
+        </div>
+        <div class="column">
+            <h2> Befejezett</h2>
+            <ul id="complete" class="task-list" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
+        </div>
+    </div>
+
+    <button class="add-task-btn" onclick="toggleTaskForm()">Új feladat</button>
+    
+    <div class="task-form-container" id="task-form-container">
+        <form id="task-form-popup">
+            <input type="text" id="popup-task-input" placeholder="Új feladat neve..." required>
+            <button type="submit">Ok</button>
+            <button type="button" onclick="toggleTaskForm()">Mégse</button>
+        </form>
+    </div>
+
+    <!-- Szerkesztési panel felugró -->
+    <div class="edit-task-container" id="edit-task-container" style="display: none;">
+        <form id="edit-task-form">
+            <h3>Feladat részletei</h3>
+            <p id="task-details-name"></p>
+
+              <!-- Felhasználó kiválasztása -->
+              <label for="task-user">Felhasználó:</label>
+              <select id="task-user" required>
+                  <option value="User1">User1</option>
+                  <option value="User2">User2</option>
+                  <option value="User3">User3</option>
+              </select>
+
+            <label for="edit-task-date">Dátum:</label>
+            <input type="date" id="edit-task-date">
+
+            <label for="edit-task-comment">Megjegyzés:</label>
+            <textarea id="edit-task-comment" placeholder="Add a comment..."></textarea>
+
+            <button type="submit">Mentés</button>
+            <button type="button" onclick="toggleEditTaskForm()">Mégse</button>
+
+            <!-- Mentés sikerességi üzenet -->
+            <p id="save-message" style="display:none; color: green;">Sikeresen elmentve!</p>
+        </form>
+    </div>
+
+    <script>
+        // Aktuálisan szerkesztett feladat ID-je
+        let currentTaskId = null;
+
+        // Rejtett űrlap megjelenítése/eltüntetése
+        function toggleTaskForm() {
+            const formContainer = document.getElementById('task-form-container');
+            formContainer.style.display = formContainer.style.display === 'none' || !formContainer.style.display ? 'block' : 'none';
+        }
+
+        // Szerkesztési panel megjelenítése/eltüntetése
+        function toggleEditTaskForm(taskId = null) {
+            const editFormContainer = document.getElementById('edit-task-container');
+            editFormContainer.style.display = editFormContainer.style.display === 'none' || !editFormContainer.style.display ? 'block' : 'none';
+            if (taskId) {
+                currentTaskId = taskId;
+                const taskElement = document.getElementById(taskId);
+                const taskDetailsName = document.getElementById('task-details-name');
+                taskDetailsName.textContent = `Feladat: ${taskElement.querySelector('strong').textContent}`;
+            }
+        }
+
+        // Új feladat hozzáadása
+        document.getElementById('task-form-popup').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const taskInput = document.getElementById('popup-task-input');
+            const taskUser = document.getElementById('task-user').value;
+            const taskText = taskInput.value;
+
+            if (taskText && taskUser) {
+                const taskItem = document.createElement('li');
+
+                // Csak a feladat neve és felhasználó jelenik meg
+                taskItem.innerHTML = `
+                    <strong>${taskText}</strong>
+                    <button onclick="toggleEditTaskForm('${taskItem.id}')">Szerkesztés</button>
+                `;
+                taskItem.draggable = true;
+                taskItem.id = 'task-' + Date.now();
+                taskItem.setAttribute('ondragstart', 'drag(event)');
+                document.getElementById('todo').appendChild(taskItem);
+
+                // Form adatok törlése
+                taskInput.value = '';
+                document.getElementById('task-user').value = 'User1';
+                toggleTaskForm(); // Form bezárása
+            }
+        });
+
+        // Feladat szerkesztése
+        document.getElementById('edit-task-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const taskDate = document.getElementById('edit-task-date').value;
+            const taskComment = document.getElementById('edit-task-comment').value;
+
+            if (currentTaskId) {
+                const taskElement = document.getElementById(currentTaskId);
+                
+                // A dátum és a megjegyzés szerkesztése
+                taskElement.querySelector('small')?.remove(); // Meglévő dátum és komment törlése
+                const taskName = taskElement.querySelector('strong').textContent;
+                const newContent = document.createElement('div');
+                newContent.innerHTML = `
+                    <small>Dátum: ${taskDate ? taskDate : 'Nincs megadva'}</small><br>
+                    <small>Megjegyzés: ${taskComment ? taskComment : 'Nincs'}</small>
+                `;
+                taskElement.appendChild(newContent);
+
+                // Mentési visszajelzés
+                const saveMessage = document.getElementById('save-message');
+                saveMessage.style.display = 'block';
+
+                // Üzenet eltüntetése 3 másodperc után
+                setTimeout(function() {
+                    saveMessage.style.display = 'none';
+                }, 3000);
+
+                toggleEditTaskForm(); // Bezárja a szerkesztési panelt
+            }
+        });
+
+        // Drag-and-Drop funkciók
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const taskId = event.dataTransfer.getData("text");
+            const taskElement = document.getElementById(taskId);
+            if (event.target.classList.contains('task-list')) {
+                event.target.appendChild(taskElement);
+            }
+        }
+
+        // Feladat törlése kukán keresztül
+        function deleteTask(event) {
+            event.preventDefault();
+            const taskId = event.dataTransfer.getData("text");
+            const taskElement = document.getElementById(taskId);
+            taskElement.remove(); // Feladat törlése
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const today = new Date().toISOString().split('T')[0]; // Mai dátum ISO formátumban
+            document.getElementById('edit-task-date').value = today; // Beállítja a mező értékét
+        });
+    </script>
+</body>
+</html>

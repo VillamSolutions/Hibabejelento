@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VillamSolution</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="bejelentkezes_demo.js" defer></script>  <!-- Hivatkozás a login.js fájlra -->
+    <link rel="website icon"  type="icon" href="ezgif-6-71f2ae52b4-modified.png">
+</head>
+<body>
+    <div class="stilus">
+        <img src="thumbnail_Jedlik_logo_2020_200_3c5beeccf8.webp" alt="kep" class="logo">
+        <h1>Bejelentkezés</h1>
+        <form id="loginForm">
+            <input type="text" id="username" name="username" placeholder="Felhasználónév"><br><br>
+            <input type="password" id="password" name="password" placeholder="Jelszó"><br><br>
+            <button type="submit">Bejelentkezés</button>
+        </form>
+        <p id="responseMessage"></p> <!-- Hibaüzenet megjelenítéséhez -->
+        
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Az alapértelmezett űrlap küldést letiltjuk
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // AJAX kérés küldése a Node.js szerverre
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                }),
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('responseMessage').innerText = data; // Eredmény üzenet megjelenítése
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('responseMessage').innerText = 'Sikertelen bejelentkezés. Kérjük, próbálja újra.'; // Hibaüzenet
+            });
+        });
+    </script>
+</body>
+</html>
